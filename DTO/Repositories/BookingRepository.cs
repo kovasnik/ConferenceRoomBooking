@@ -19,6 +19,7 @@ namespace ConferenceRoomBooking.DTO.Repositories
 
         public async Task<bool> IsAvilableAsync(int roomId, DateTime startTime, DateTime endTime)
         {
+            // search booking by time in group with room id
             return await _context.Bookings.AnyAsync(b => b.RoomId == roomId && b.StartTime < endTime && b.EndTime > startTime);
         }
 

@@ -7,10 +7,13 @@ namespace ConferenceRoomBooking.DTO
     {
         public BookingDbContext(DbContextOptions<BookingDbContext> options) : base(options) { }
 
+        //objects that will be stored in the database
         public DbSet<Booking> Bookings { get; set; }
         public DbSet<ConferenceRoom> ConferenceRooms { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<RoomService> RoomServices { get; set; }
+
+        // Setting up a many to many relationship
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<RoomService>()

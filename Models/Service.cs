@@ -16,6 +16,7 @@ namespace ConferenceRoomBooking.Models
         public string? Description { get; set; }
         [Column("cost")]
         public decimal Cost { get; set; }
+        // table service has connection many to meny with table conference room via RoomService table
         public List<RoomService> RoomServices { get; set; }
 
     }

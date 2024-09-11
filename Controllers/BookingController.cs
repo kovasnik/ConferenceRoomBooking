@@ -10,6 +10,7 @@ namespace ConferenceRoomBooking.Controllers
     [Route("api/[controller]")]
     public class BookingController : Controller
     {
+        // Connecting repositories using dependency injection
         private readonly IServiceRepository _serviceRepository;
         private readonly IBookingRepository _bookingRepository;
         private readonly IConferenceRoomRepository _roomRepository;
@@ -24,6 +25,7 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateBookingAsync([FromBody] CreateBookingViewModel viewModel)
         {
+            // Check the reservation for a conference room at a specific time
             bool isBooked = await _bookingRepository.IsAvilableAsync(viewModel.RoomId, viewModel.StartTime, viewModel.EndTime);
             if (isBooked)
             {
@@ -44,6 +46,7 @@ namespace ConferenceRoomBooking.Controllers
                 TotalCost = 0
             };
 
+            // TotalCost calculation
             TimeSpan duration = viewModel.EndTime - viewModel.StartTime;
             for (int hour = 0;  hour < duration.TotalHours; hour++)
             {
@@ -67,6 +70,7 @@ namespace ConferenceRoomBooking.Controllers
                 }
             }
 
+            // Adding cost of services
             if (viewModel.ServiceIds != null)
             {
                 var service = new Service();

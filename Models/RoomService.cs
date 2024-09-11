@@ -6,6 +6,7 @@ namespace ConferenceRoomBooking.Models
     [Table("room_serice", Schema = "public")]
     public class RoomService
     {
+        // transitional table
         [Column("service_id")]
         public int ServiceId { get; set; }
         [Column("room_id")]

@@ -28,11 +28,5 @@ namespace ConferenceRoomBooking.DTO.Repositories
             await _context.SaveChangesAsync();
         }
 
-        //public async Task<IEnumerable<RoomService>> GetByRoomIdAsync(int roomId)
-        //{
-        //    var roomServices = await _context.RoomServices..FindAsync().;
-        //    return roomServices;
-        //}
-
     }
 }

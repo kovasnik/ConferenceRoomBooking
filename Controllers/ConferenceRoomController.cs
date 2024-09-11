@@ -11,6 +11,7 @@ namespace ConferenceRoomBooking.Controllers
     [Route("api/[controller]")]
     public class ConferenceRoomController : Controller
     {
+        // Connecting repositories using dependency injection
         private readonly IConferenceRoomRepository _conferenceRoomRepository;
         private readonly IRoomServiceRepository _roomServiceRepository;
         public ConferenceRoomController(IConferenceRoomRepository roomRepository, IRoomServiceRepository roomServiceRepository) 
@@ -24,7 +25,8 @@ namespace ConferenceRoomBooking.Controllers
         {
 
             var serviceIds = roomWithServices.ServiceIds;
-            if (!ModelState.IsValid)
+            // Model checks
+            if (roomWithServices.Name == "")
             {
                 return BadRequest("Please enter an existing conference room");
             }
@@ -37,6 +39,7 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest("Cost per hour needs to be higher than 0");
             }
 
+            // Pass the checked values ​​to the model
             var room = new ConferenceRoom
             {
                 Name = roomWithServices.Name,
@@ -48,15 +51,14 @@ namespace ConferenceRoomBooking.Controllers
 
             await _conferenceRoomRepository.AddAsync(room);
 
+            // If not empty add to the RoomServices all connections
             if (room.RoomServices == null)
             {
                 room.RoomServices = new List<RoomService>();
             }
-
             foreach (var serviceId in serviceIds)
             {
                 await _roomServiceRepository.AddAsync(new RoomService { ServiceId = serviceId, RoomId = room.Id });
-                //room.RoomServices.Add(new RoomService { ServiceId = serviceId, RoomId = room.Id });
             }
 
             return Ok(room.Id);
@@ -65,11 +67,12 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("delete")]
         public async Task<IActionResult> DeleteConferenceRoom(int roomId)
         {
+            // Search for a conference room by id
             var room = await _conferenceRoomRepository.GetRoomByIdAsync(roomId);
             if (room != null)
             {
                 await _conferenceRoomRepository.DeleteAsync(room);
-                return NoContent(); 
+                return NoContent(); // 204
             }
 
                 return BadRequest("Id does not exist");
@@ -78,9 +81,10 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("update")]
         public async Task<IActionResult> UpdateConfirenceRoom([FromBody] UpdateRoomViewModel viewModel)
         {
-            if (!ModelState.IsValid)
+            // Model checks
+            if (viewModel.Name == "")
             {
-                return BadRequest("Please fill in all fields");
+                return BadRequest("Please enter an existing conference room");
             }
             else if (viewModel.Capacity <= 4)
             {
@@ -90,18 +94,18 @@ namespace ConferenceRoomBooking.Controllers
             {
                 return BadRequest("Cost per hour needs to be higher than 0");
             }
-
+            // Search for a conference room by id
             var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(viewModel.Id);
 
             if (existingRoom == null)
             {
-                return NotFound("Conference room not found");
+                return NotFound("Conference room not found"); //404
             }
-
-            existingRoom.Name = viewModel.Name ?? existingRoom.Description;
-            existingRoom.CostPerHour = viewModel.CostPerHour ?? existingRoom.CostPerHour;
-            existingRoom.Capacity = viewModel.Capacity ?? existingRoom.Capacity;
-            existingRoom.Description = viewModel.Description ?? existingRoom.Description;
+            // Pass the checked values ​​to the model
+            existingRoom.Name = viewModel.Name;
+            existingRoom.CostPerHour = viewModel.CostPerHour;
+            existingRoom.Capacity = viewModel.Capacity;
+            existingRoom.Description = viewModel.Description;
 
             await _conferenceRoomRepository.UpdateAsync(existingRoom);
             return Ok();
@@ -110,19 +114,22 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("available")]
         public async Task<IActionResult> GetAvailableConfirenceRoom(DateTime startTime, DateTime endTime, int capasity)
         {
+            // booking checks
             if (startTime.Date != endTime.Date)
             {
                 return BadRequest("Booking must be made on the same day");
             }
             TimeSpan startLimit = new TimeSpan(6, 0, 0);  // 06:00
-            TimeSpan endLimit = new TimeSpan(24, 0, 0);   // 24:00
+            TimeSpan endLimit = new TimeSpan(23, 0, 0);   // 23:00
 
             if (startTime.TimeOfDay < startLimit || endTime.TimeOfDay > endLimit)
             {
-                return BadRequest("Booking time must be between 6:00 AM and 12:00 PM");
+                return BadRequest("Booking time must be between 6:00 AM and 11:00 PM");
             }
 
+            // create an IEnumerable object and put all the suitable conference room into it
             IEnumerable<ConferenceRoom> availableRooms = await _conferenceRoomRepository.GetAvailableRoomAsync(startTime, endTime, capasity);
+            // transfer data to the viewmodel to correctly issue service IDs (if we don't transfer it, it will be loop)
             var viewModels = availableRooms.Select(r => new AvailableRoomsViewModel
             {
                 Id = r.Id,

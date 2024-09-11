@@ -17,6 +17,7 @@ namespace ConferenceRoomBooking.Models
         public DateTime EndTime { get; set; }
         [Column("total_cost")]
         public decimal TotalCost { get; set; }
+        // table ConferenceRoom has connection many to one with table Booking 
         public ConferenceRoom Room { get; set; }
     }
 }

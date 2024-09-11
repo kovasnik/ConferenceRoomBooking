@@ -17,6 +17,9 @@ namespace ConferenceRoomBooking.Models
         public int Capacity { get; set; }
         [Column("cost_per_hour")]
         public decimal CostPerHour { get; set; }
+        // table ConferenceRoom has connection many to many with table service via RoomService table
         public List<RoomService>? RoomServices { get; set; }
+        // table ConferenceRoom has connection one to many with table Booking 
+        public List<Booking>? Bookings { get; set; }
     }
 }

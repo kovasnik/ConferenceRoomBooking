@@ -8,6 +8,5 @@ namespace ConferenceRoomBooking.ViewModel
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
         public List<int> ServiceIds { get; set; }
-        //public decimal TotalCost { get; set; }
     }
 }

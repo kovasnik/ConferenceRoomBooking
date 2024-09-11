@@ -28,12 +28,14 @@ namespace ConferenceRoomBooking.DTO.Repositories
 
         public async Task<IEnumerable<ConferenceRoom>> GetAvailableRoomAsync(DateTime startTime, DateTime endTime, int capasity)
         {
+            // search by capasity and include RoomService
             var rooms = await _context.ConferenceRooms.Where(r => r.Capacity >= capasity).Include(r => r.RoomServices).ToListAsync();
 
             var availableRooms = new List<ConferenceRoom>();
 
             foreach(var room in rooms)
             {
+                // search by time 
                 bool isBooked = await _bookingRepository.IsAvilableAsync(room.Id, startTime, endTime);
                 if (!isBooked)
                 {
@@ -42,6 +44,8 @@ namespace ConferenceRoomBooking.DTO.Repositories
             }
 
             return availableRooms;
+
+            //if don't separate the work of repositories
             //return await _context.ConferenceRooms
             //    .Where(r => r.Capacity >= capasity && !_context.Bookings
             //    .Any(b => b.RoomId == r.Id && b.StartTime < endTime && b.EndTime > startTime))

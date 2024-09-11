@@ -10,6 +10,7 @@ namespace ConferenceRoomBooking.Controllers
     [Route("api/[controller]")]
     public class ServiceController : Controller
     {
+        // Connecting repositories using dependency injection
         private readonly IServiceRepository _serviceRepository;
         public ServiceController(IServiceRepository serviceRepository) 
         {
@@ -19,7 +20,8 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("add")]
         public async Task<IActionResult> AddAsync([FromBody] CreateServiceViewModel viewModel)
         {
-            if (viewModel.Name == null)
+            // Model checks
+            if (viewModel.Name == "")
             {
                 return BadRequest("Please enter a name for service ");
             }
@@ -27,7 +29,7 @@ namespace ConferenceRoomBooking.Controllers
             {
                 return BadRequest("Cost needs to be higher than 0");
             }
-
+            // Pass the checked values ​​to the model
             var service = new Service
             {
                 Name = viewModel.Name,
@@ -42,6 +44,7 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("delete")]
         public async Task<IActionResult> DeleteAsync(int serviceId)
         {
+            // Search for a service by id
             var service = await _serviceRepository.GetByIdAsync(serviceId);
 
             if (service is null)
@@ -56,6 +59,7 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("update")]
         public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceViewModel viewModel)
         {
+            // Model checks
             if (viewModel.Name == null)
             {
                 return BadRequest("Please enter a name for service ");
@@ -65,11 +69,13 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest("Cost needs to be higher than 0");
             }
 
+            // Search for a service by id
             var service = await _serviceRepository.GetByIdAsync(viewModel.Id);
 
-            service.Name = viewModel.Name ?? service.Name;
-            service.Description = viewModel.Description ?? service.Description;
-            service.Cost = viewModel.Cost ?? service.Cost;
+            // Pass the checked values ​​to the model
+            service.Name = viewModel.Name;
+            service.Description = viewModel.Description;
+            service.Cost = viewModel.Cost;
 
             await _serviceRepository.UpdateAsync(service); 
             return Ok();
