@@ -17,6 +17,6 @@ namespace ConferenceRoomBooking.Models
         public int Capacity { get; set; }
         [Column("cost_per_hour")]
         public decimal CostPerHour { get; set; }
-        public List<RoomService> RoomServices { get; set; }
+        public List<RoomService>? RoomServices { get; set; }
     }
 }

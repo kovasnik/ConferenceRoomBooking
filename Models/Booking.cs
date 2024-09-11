@@ -17,7 +17,6 @@ namespace ConferenceRoomBooking.Models
         public DateTime EndTime { get; set; }
         [Column("total_cost")]
         public decimal TotalCost { get; set; }
-        public List<Service> Services { get; set; }
         public ConferenceRoom Room { get; set; }
     }
 }
