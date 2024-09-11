@@ -19,7 +19,8 @@ Project has 3 fully working controllers with the main logic of operation
 ![image](https://github.com/user-attachments/assets/5add2ace-b5b7-4119-95c8-bcb929c9ef6f)
 
 **ServicesController:**
-![image](https://github.com/user-attachments/assets/3c240cfc-2729-4aee-bd1f-934edf8f622f) ![image](https://github.com/user-attachments/assets/9ebf14e2-de91-4667-853e-62e53e4e1f17)
+
+![image](https://github.com/user-attachments/assets/860520d5-8396-4824-8fc5-63a78304d0e2) ![image](https://github.com/user-attachments/assets/9ebf14e2-de91-4667-853e-62e53e4e1f17)
 
 
 **ConferenceRoomControlle:**
