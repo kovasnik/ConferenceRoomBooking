@@ -64,5 +64,6 @@ Create booking:
 
 ![image](https://github.com/user-attachments/assets/4ddb0f87-80c9-4241-9b1d-6b7dddf23231) ![image](https://github.com/user-attachments/assets/cff49c04-eb38-4b94-ae6e-89b2a4a3e731)
 
+Checking calculations:
 
 
