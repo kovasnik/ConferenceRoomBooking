@@ -66,4 +66,6 @@ Create booking:
 
 Checking calculations:
 
+5 hours
+(1500 * 1.15) + (1500 * 1.15) + 1500 + 1500 + 1500 + 700(Sound) = 8650
 
