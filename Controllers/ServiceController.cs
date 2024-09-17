@@ -21,7 +21,11 @@ namespace ConferenceRoomBooking.Controllers
         public async Task<IActionResult> AddAsync([FromBody] CreateServiceViewModel viewModel)
         {
             // Model checks
-            if (viewModel.Name == "")
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Please enter data");
+            }
+            else if (viewModel.Name == "")
             {
                 return BadRequest("Please enter a name for service ");
             }
@@ -41,7 +45,7 @@ namespace ConferenceRoomBooking.Controllers
             return Ok(service.Id);
         }
 
-        [HttpPost("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeleteAsync(int serviceId)
         {
             // Search for a service by id
@@ -60,7 +64,11 @@ namespace ConferenceRoomBooking.Controllers
         public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceViewModel viewModel)
         {
             // Model checks
-            if (viewModel.Name == null)
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Please enter data");
+            }
+            else if (viewModel.Name == null)
             {
                 return BadRequest("Please enter a name for service ");
             }

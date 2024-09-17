@@ -26,7 +26,11 @@ namespace ConferenceRoomBooking.Controllers
 
             var serviceIds = roomWithServices.ServiceIds;
             // Model checks
-            if (roomWithServices.Name == "")
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Please enter data");
+            }
+            else if (roomWithServices.Name == "")
             {
                 return BadRequest("Please enter an existing conference room");
             }
@@ -64,7 +68,7 @@ namespace ConferenceRoomBooking.Controllers
             return Ok(room.Id);
         }
 
-        [HttpPost("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeleteConferenceRoom(int roomId)
         {
             // Search for a conference room by id
@@ -78,11 +82,15 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest("Id does not exist");
         }
 
-        [HttpPost("update")]
+        [HttpPut("update")]
         public async Task<IActionResult> UpdateConfirenceRoom([FromBody] UpdateRoomViewModel viewModel)
         {
             // Model checks
-            if (viewModel.Name == "")
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Please enter data");
+            }
+            else if (viewModel.Name == "")
             {
                 return BadRequest("Please enter an existing conference room");
             }
@@ -111,7 +119,7 @@ namespace ConferenceRoomBooking.Controllers
             return Ok();
         }
 
-        [HttpPost("available")]
+        [HttpGet("available")]
         public async Task<IActionResult> GetAvailableConfirenceRoom(DateTime startTime, DateTime endTime, int capasity)
         {
             // booking checks

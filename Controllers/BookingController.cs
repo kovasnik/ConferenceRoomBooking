@@ -25,6 +25,10 @@ namespace ConferenceRoomBooking.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateBookingAsync([FromBody] CreateBookingViewModel viewModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Please enter data");
+            }
             // Check the reservation for a conference room at a specific time
             bool isBooked = await _bookingRepository.IsAvilableAsync(viewModel.RoomId, viewModel.StartTime, viewModel.EndTime);
             if (isBooked)
