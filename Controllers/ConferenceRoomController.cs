@@ -28,19 +28,7 @@ namespace ConferenceRoomBooking.Controllers
             // Model checks
             if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter data");
-            }
-            else if (roomWithServices.Name == "")
-            {
-                return BadRequest("Please enter an existing conference room");
-            }
-            else if (roomWithServices.Capacity <= 4)
-            {
-                return BadRequest("Capacity needs to be higher than 4 people");
-            }
-            else if (roomWithServices.CostPerHour <= 0)
-            {
-                return BadRequest("Cost per hour needs to be higher than 0");
+                return BadRequest(ModelState);
             }
 
             // Pass the checked values ​​to the model
@@ -88,19 +76,7 @@ namespace ConferenceRoomBooking.Controllers
             // Model checks
             if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter data");
-            }
-            else if (viewModel.Name == "")
-            {
-                return BadRequest("Please enter an existing conference room");
-            }
-            else if (viewModel.Capacity <= 4)
-            {
-                return BadRequest("Capacity needs to be higher than 4 people");
-            }
-            else if (viewModel.CostPerHour <= 0)
-            {
-                return BadRequest("Cost per hour needs to be higher than 0");
+                return BadRequest(ModelState);
             }
             // Search for a conference room by id
             var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(viewModel.Id);

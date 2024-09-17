@@ -23,16 +23,9 @@ namespace ConferenceRoomBooking.Controllers
             // Model checks
             if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter data");
+                return BadRequest(ModelState);
             }
-            else if (viewModel.Name == "")
-            {
-                return BadRequest("Please enter a name for service ");
-            }
-            else if (viewModel.Cost <= 0)
-            {
-                return BadRequest("Cost needs to be higher than 0");
-            }
+
             // Pass the checked values ​​to the model
             var service = new Service
             {
@@ -67,14 +60,6 @@ namespace ConferenceRoomBooking.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest("Please enter data");
-            }
-            else if (viewModel.Name == null)
-            {
-                return BadRequest("Please enter a name for service ");
-            }
-            else if (viewModel.Cost <= 0)
-            {
-                return BadRequest("Cost needs to be higher than 0");
             }
 
             // Search for a service by id
