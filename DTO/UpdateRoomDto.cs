@@ -2,7 +2,7 @@
 
 namespace ConferenceRoomBooking.ViewModel
 {
-    public class UpdateRoomViewModel
+    public class UpdateRoomDto
     {
         public int Id { get; set; }
         [Required(ErrorMessage = "Please enter a conference room name")]

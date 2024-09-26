@@ -21,7 +21,7 @@ namespace ConferenceRoomBooking.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddConfereceRoom([FromBody] CreateRoomViewModel roomWithServices)
+        public async Task<IActionResult> AddConfereceRoom([FromBody] CreateRoomDto roomWithServices)
         {
 
             var serviceIds = roomWithServices.ServiceIds;
@@ -71,7 +71,7 @@ namespace ConferenceRoomBooking.Controllers
         }
 
         [HttpPut("update")]
-        public async Task<IActionResult> UpdateConfirenceRoom([FromBody] UpdateRoomViewModel viewModel)
+        public async Task<IActionResult> UpdateConfirenceRoom([FromBody] UpdateRoomDto dtoModel)
         {
             // Model checks
             if (!ModelState.IsValid)
@@ -79,17 +79,17 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest(ModelState);
             }
             // Search for a conference room by id
-            var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(viewModel.Id);
+            var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(dtoModel.Id);
 
             if (existingRoom == null)
             {
                 return NotFound("Conference room not found"); //404
             }
             // Pass the checked values ​​to the model
-            existingRoom.Name = viewModel.Name;
-            existingRoom.CostPerHour = viewModel.CostPerHour;
-            existingRoom.Capacity = viewModel.Capacity;
-            existingRoom.Description = viewModel.Description;
+            existingRoom.Name = dtoModel.Name;
+            existingRoom.CostPerHour = dtoModel.CostPerHour;
+            existingRoom.Capacity = dtoModel.Capacity;
+            existingRoom.Description = dtoModel.Description;
 
             await _conferenceRoomRepository.UpdateAsync(existingRoom);
             return Ok();
@@ -114,7 +114,7 @@ namespace ConferenceRoomBooking.Controllers
             // create an IEnumerable object and put all the suitable conference room into it
             IEnumerable<ConferenceRoom> availableRooms = await _conferenceRoomRepository.GetAvailableRoomAsync(startTime, endTime, capasity);
             // transfer data to the viewmodel to correctly issue service IDs (if we don't transfer it, it will be loop)
-            var viewModels = availableRooms.Select(r => new AvailableRoomsViewModel
+            var viewModels = availableRooms.Select(r => new AvailableRoomsDto
             {
                 Id = r.Id,
                 Name = r.Name,

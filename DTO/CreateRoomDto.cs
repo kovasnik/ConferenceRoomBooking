@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ConferenceRoomBooking.ViewModel
 {
-    public class CreateRoomViewModel
+    public class CreateRoomDto
     {
         [Required(ErrorMessage = "Please enter a conference room name")]
         public string Name { get; set; }

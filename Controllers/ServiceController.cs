@@ -18,7 +18,7 @@ namespace ConferenceRoomBooking.Controllers
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddAsync([FromBody] CreateServiceViewModel viewModel)
+        public async Task<IActionResult> AddAsync([FromBody] CreateServiceDto dtoModel)
         {
             // Model checks
             if (!ModelState.IsValid)
@@ -29,9 +29,9 @@ namespace ConferenceRoomBooking.Controllers
             // Pass the checked values ​​to the model
             var service = new Service
             {
-                Name = viewModel.Name,
-                Description = viewModel.Description,
-                Cost = viewModel.Cost
+                Name = dtoModel.Name,
+                Description = dtoModel.Description,
+                Cost = dtoModel.Cost
             };
 
             await _serviceRepository.AddAsync(service);
@@ -54,7 +54,7 @@ namespace ConferenceRoomBooking.Controllers
         }
 
         [HttpPost("update")]
-        public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceViewModel viewModel)
+        public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceDto viewModel)
         {
             // Model checks
             if (!ModelState.IsValid)

@@ -1,6 +1,6 @@
 ﻿namespace ConferenceRoomBooking.ViewModel
 {
-    public class AvailableRoomsViewModel
+    public class AvailableRoomsDto
     {
         public int Id { get; set; }
         public string Name { get; set; }
