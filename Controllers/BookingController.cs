@@ -1,4 +1,5 @@
-﻿using ConferenceRoomBooking.DTO.Interfaces;
+﻿using AutoMapper;
+using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
 using ConferenceRoomBooking.Models;
 using ConferenceRoomBooking.ViewModel;
@@ -14,43 +15,50 @@ namespace ConferenceRoomBooking.Controllers
         private readonly IServiceRepository _serviceRepository;
         private readonly IBookingRepository _bookingRepository;
         private readonly IConferenceRoomRepository _roomRepository;
+        private readonly IMapper _mapper;
 
-        public BookingController(IBookingRepository bookingRepository, IConferenceRoomRepository roomRepository, IServiceRepository serviceRepository)
+        public BookingController(IBookingRepository bookingRepository, IConferenceRoomRepository roomRepository, IServiceRepository serviceRepository, IMapper mapper)
         {
             _bookingRepository = bookingRepository;
             _roomRepository = roomRepository;
             _serviceRepository = serviceRepository;
+            _mapper = mapper;
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateBookingAsync([FromBody] CreateBookingViewModel viewModel)
+        public async Task<IActionResult> CreateBookingAsync([FromBody] CreateBookingDto dtoModel)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest("Please enter data");
+            }
             // Check the reservation for a conference room at a specific time
-            bool isBooked = await _bookingRepository.IsAvilableAsync(viewModel.RoomId, viewModel.StartTime, viewModel.EndTime);
+            bool isBooked = await _bookingRepository.IsAvilableAsync(dtoModel.RoomId, dtoModel.StartTime, dtoModel.EndTime);
             if (isBooked)
             {
                 return BadRequest("This room is not available at the that time.");
             }
 
-            var room = await _roomRepository.GetRoomByIdAsync(viewModel.RoomId);
+            var room = await _roomRepository.GetRoomByIdAsync(dtoModel.RoomId);
             if (room == null)
             {
                 return NotFound("Conference room not found.");
             }
 
-            var booking = new Booking
-            {
-                RoomId = viewModel.RoomId,
-                StartTime = viewModel.StartTime,
-                EndTime = viewModel.EndTime,
-                TotalCost = 0
-            };
+            var booking = _mapper.Map<Booking>(dtoModel);
+            //var booking = new Booking
+            //{
+            //    RoomId = dtoModel.RoomId,
+            //    StartTime = dtoModel.StartTime,
+            //    EndTime = dtoModel.EndTime,
+            //    TotalCost = 0
+            //};
 
             // TotalCost calculation
-            TimeSpan duration = viewModel.EndTime - viewModel.StartTime;
+            TimeSpan duration = dtoModel.EndTime - dtoModel.StartTime;
             for (int hour = 0;  hour < duration.TotalHours; hour++)
             {
-                DateTime currentHour = viewModel.StartTime.AddHours(hour);
+                DateTime currentHour = dtoModel.StartTime.AddHours(hour);
 
                 if (currentHour.Hour >= 6 && currentHour.Hour < 9)
                 {
@@ -71,10 +79,10 @@ namespace ConferenceRoomBooking.Controllers
             }
 
             // Adding cost of services
-            if (viewModel.ServiceIds != null)
+            if (dtoModel.ServiceIds != null)
             {
                 var service = new Service();
-                foreach (var serviceId in viewModel.ServiceIds)
+                foreach (var serviceId in dtoModel.ServiceIds)
                 {
                     service = await _serviceRepository.GetByIdAsync(serviceId);
                     booking.TotalCost += service.Cost;

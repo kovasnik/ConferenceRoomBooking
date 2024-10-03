@@ -2,11 +2,14 @@ using ConferenceRoomBooking.DTO;
 using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 // Dependency injection for repositiries
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();

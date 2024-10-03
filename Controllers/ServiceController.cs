@@ -1,4 +1,5 @@
-﻿using ConferenceRoomBooking.DTO.Interfaces;
+﻿using AutoMapper;
+using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
 using ConferenceRoomBooking.Models;
 using ConferenceRoomBooking.ViewModel;
@@ -12,36 +13,37 @@ namespace ConferenceRoomBooking.Controllers
     {
         // Connecting repositories using dependency injection
         private readonly IServiceRepository _serviceRepository;
-        public ServiceController(IServiceRepository serviceRepository) 
+        private readonly IMapper _mapper;
+        
+        public ServiceController(IServiceRepository serviceRepository, IMapper mapper) 
         {
             _serviceRepository = serviceRepository;
+            _mapper = mapper;
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddAsync([FromBody] CreateServiceViewModel viewModel)
+        public async Task<IActionResult> AddAsync([FromBody] CreateServiceDto dtoModel)
         {
             // Model checks
-            if (viewModel.Name == "")
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter a name for service ");
+                return BadRequest(ModelState);
             }
-            else if (viewModel.Cost <= 0)
-            {
-                return BadRequest("Cost needs to be higher than 0");
-            }
+
             // Pass the checked values ​​to the model
-            var service = new Service
-            {
-                Name = viewModel.Name,
-                Description = viewModel.Description,
-                Cost = viewModel.Cost
-            };
+            var service = _mapper.Map<Service>(dtoModel);
+            //var service = new Service
+            //{
+            //    Name = dtoModel.Name,
+            //    Description = dtoModel.Description,
+            //    Cost = dtoModel.Cost
+            //};
 
             await _serviceRepository.AddAsync(service);
             return Ok(service.Id);
         }
 
-        [HttpPost("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeleteAsync(int serviceId)
         {
             // Search for a service by id
@@ -56,26 +58,24 @@ namespace ConferenceRoomBooking.Controllers
             return Ok();
         }
 
-        [HttpPost("update")]
-        public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceViewModel viewModel)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceDto dtoModel)
         {
             // Model checks
-            if (viewModel.Name == null)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter a name for service ");
+                return BadRequest("Please enter data");
             }
-            else if (viewModel.Cost <= 0)
-            {
-                return BadRequest("Cost needs to be higher than 0");
-            }
+
 
             // Search for a service by id
-            var service = await _serviceRepository.GetByIdAsync(viewModel.Id);
+            var service = await _serviceRepository.GetByIdAsync(dtoModel.Id);
 
             // Pass the checked values ​​to the model
-            service.Name = viewModel.Name;
-            service.Description = viewModel.Description;
-            service.Cost = viewModel.Cost;
+            _mapper.Map(dtoModel, service);
+            //service.Name = dtoModel.Name;
+            //service.Description = dtoModel.Description;
+            //service.Cost = dtoModel.Cost;
 
             await _serviceRepository.UpdateAsync(service); 
             return Ok();

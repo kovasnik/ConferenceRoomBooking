@@ -2,7 +2,7 @@
 
 namespace ConferenceRoomBooking.ViewModel
 {
-    public class CreateBookingViewModel
+    public class CreateBookingDto
     {
         public int RoomId { get; set; }
         public DateTime StartTime { get; set; }

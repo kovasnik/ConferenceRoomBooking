@@ -1,4 +1,5 @@
-﻿using ConferenceRoomBooking.DTO.Interfaces;
+﻿using AutoMapper;
+using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
 using ConferenceRoomBooking.Models;
 using ConferenceRoomBooking.ViewModel;
@@ -14,39 +15,34 @@ namespace ConferenceRoomBooking.Controllers
         // Connecting repositories using dependency injection
         private readonly IConferenceRoomRepository _conferenceRoomRepository;
         private readonly IRoomServiceRepository _roomServiceRepository;
-        public ConferenceRoomController(IConferenceRoomRepository roomRepository, IRoomServiceRepository roomServiceRepository) 
+        private readonly IMapper _mapper;
+        public ConferenceRoomController(IConferenceRoomRepository roomRepository, IRoomServiceRepository roomServiceRepository, IMapper mapper) 
         { 
             _conferenceRoomRepository = roomRepository;
             _roomServiceRepository = roomServiceRepository;
+            _mapper = mapper;
         }
 
         [HttpPost("add")]
-        public async Task<IActionResult> AddConfereceRoom([FromBody] CreateRoomViewModel roomWithServices)
+        public async Task<IActionResult> AddConfereceRoom([FromBody] CreateRoomDto roomWithServices)
         {
 
             var serviceIds = roomWithServices.ServiceIds;
             // Model checks
-            if (roomWithServices.Name == "")
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter an existing conference room");
-            }
-            else if (roomWithServices.Capacity <= 4)
-            {
-                return BadRequest("Capacity needs to be higher than 4 people");
-            }
-            else if (roomWithServices.CostPerHour <= 0)
-            {
-                return BadRequest("Cost per hour needs to be higher than 0");
+                return BadRequest(ModelState);
             }
 
             // Pass the checked values ​​to the model
-            var room = new ConferenceRoom
-            {
-                Name = roomWithServices.Name,
-                Description = roomWithServices.Description,
-                Capacity = roomWithServices.Capacity,
-                CostPerHour = roomWithServices.CostPerHour
-            };
+            var room = _mapper.Map<ConferenceRoom>(roomWithServices);
+            //var room = new ConferenceRoom
+            //{
+            //    Name = roomWithServices.Name,
+            //    Description = roomWithServices.Description,
+            //    Capacity = roomWithServices.Capacity,
+            //    CostPerHour = roomWithServices.CostPerHour
+            //};
 
 
             await _conferenceRoomRepository.AddAsync(room);
@@ -64,7 +60,7 @@ namespace ConferenceRoomBooking.Controllers
             return Ok(room.Id);
         }
 
-        [HttpPost("delete")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeleteConferenceRoom(int roomId)
         {
             // Search for a conference room by id
@@ -78,40 +74,33 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest("Id does not exist");
         }
 
-        [HttpPost("update")]
-        public async Task<IActionResult> UpdateConfirenceRoom([FromBody] UpdateRoomViewModel viewModel)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpdateConfirenceRoom([FromBody] UpdateRoomDto dtoModel)
         {
             // Model checks
-            if (viewModel.Name == "")
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Please enter an existing conference room");
-            }
-            else if (viewModel.Capacity <= 4)
-            {
-                return BadRequest("Capacity needs to be higher than 4 people");
-            }
-            else if (viewModel.CostPerHour <= 0)
-            {
-                return BadRequest("Cost per hour needs to be higher than 0");
+                return BadRequest(ModelState);
             }
             // Search for a conference room by id
-            var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(viewModel.Id);
+            var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(dtoModel.Id);
 
             if (existingRoom == null)
             {
                 return NotFound("Conference room not found"); //404
             }
             // Pass the checked values ​​to the model
-            existingRoom.Name = viewModel.Name;
-            existingRoom.CostPerHour = viewModel.CostPerHour;
-            existingRoom.Capacity = viewModel.Capacity;
-            existingRoom.Description = viewModel.Description;
+            existingRoom = _mapper.Map<ConferenceRoom>(dtoModel);
+            //existingRoom.Name = dtoModel.Name;
+            //existingRoom.CostPerHour = dtoModel.CostPerHour;
+            //existingRoom.Capacity = dtoModel.Capacity;
+            //existingRoom.Description = dtoModel.Description;
 
             await _conferenceRoomRepository.UpdateAsync(existingRoom);
             return Ok();
         }
 
-        [HttpPost("available")]
+        [HttpGet("available")]
         public async Task<IActionResult> GetAvailableConfirenceRoom(DateTime startTime, DateTime endTime, int capasity)
         {
             // booking checks
@@ -129,14 +118,16 @@ namespace ConferenceRoomBooking.Controllers
 
             // create an IEnumerable object and put all the suitable conference room into it
             IEnumerable<ConferenceRoom> availableRooms = await _conferenceRoomRepository.GetAvailableRoomAsync(startTime, endTime, capasity);
+
             // transfer data to the viewmodel to correctly issue service IDs (if we don't transfer it, it will be loop)
-            var viewModels = availableRooms.Select(r => new AvailableRoomsViewModel
-            {
-                Id = r.Id,
-                Name = r.Name,
-                Capacity = r.Capacity,
-                ServiceIds = r.RoomServices.Select(rs => rs.ServiceId).ToList()
-            });
+            var viewModels = _mapper.Map < IEnumerable<AvailableRoomsDto>>(availableRooms);
+            //var viewModels = availableRooms.Select(r => new AvailableRoomsDto
+            //{
+            //    Id = r.Id,
+            //    Name = r.Name,
+            //    Capacity = r.Capacity,
+            //    ServiceIds = r.RoomServices.Select(rs => rs.ServiceId).ToList()
+            //});
 
             if (viewModels is null)
             {
