@@ -1,4 +1,5 @@
-﻿using ConferenceRoomBooking.DTO.Interfaces;
+﻿using AutoMapper;
+using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
 using ConferenceRoomBooking.Models;
 using ConferenceRoomBooking.ViewModel;
@@ -12,9 +13,12 @@ namespace ConferenceRoomBooking.Controllers
     {
         // Connecting repositories using dependency injection
         private readonly IServiceRepository _serviceRepository;
-        public ServiceController(IServiceRepository serviceRepository) 
+        private readonly IMapper _mapper;
+        
+        public ServiceController(IServiceRepository serviceRepository, IMapper mapper) 
         {
             _serviceRepository = serviceRepository;
+            _mapper = mapper;
         }
 
         [HttpPost("add")]
@@ -27,12 +31,13 @@ namespace ConferenceRoomBooking.Controllers
             }
 
             // Pass the checked values ​​to the model
-            var service = new Service
-            {
-                Name = dtoModel.Name,
-                Description = dtoModel.Description,
-                Cost = dtoModel.Cost
-            };
+            var service = _mapper.Map<Service>(dtoModel);
+            //var service = new Service
+            //{
+            //    Name = dtoModel.Name,
+            //    Description = dtoModel.Description,
+            //    Cost = dtoModel.Cost
+            //};
 
             await _serviceRepository.AddAsync(service);
             return Ok(service.Id);
@@ -53,8 +58,8 @@ namespace ConferenceRoomBooking.Controllers
             return Ok();
         }
 
-        [HttpPost("update")]
-        public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceDto viewModel)
+        [HttpPut("update")]
+        public async Task<IActionResult> UpgrateAsync([FromBody] UpdateServiceDto dtoModel)
         {
             // Model checks
             if (!ModelState.IsValid)
@@ -62,13 +67,15 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest("Please enter data");
             }
 
+
             // Search for a service by id
-            var service = await _serviceRepository.GetByIdAsync(viewModel.Id);
+            var service = await _serviceRepository.GetByIdAsync(dtoModel.Id);
 
             // Pass the checked values ​​to the model
-            service.Name = viewModel.Name;
-            service.Description = viewModel.Description;
-            service.Cost = viewModel.Cost;
+            _mapper.Map(dtoModel, service);
+            //service.Name = dtoModel.Name;
+            //service.Description = dtoModel.Description;
+            //service.Cost = dtoModel.Cost;
 
             await _serviceRepository.UpdateAsync(service); 
             return Ok();

@@ -1,4 +1,5 @@
-﻿using ConferenceRoomBooking.DTO.Interfaces;
+﻿using AutoMapper;
+using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
 using ConferenceRoomBooking.Models;
 using ConferenceRoomBooking.ViewModel;
@@ -14,12 +15,14 @@ namespace ConferenceRoomBooking.Controllers
         private readonly IServiceRepository _serviceRepository;
         private readonly IBookingRepository _bookingRepository;
         private readonly IConferenceRoomRepository _roomRepository;
+        private readonly IMapper _mapper;
 
-        public BookingController(IBookingRepository bookingRepository, IConferenceRoomRepository roomRepository, IServiceRepository serviceRepository)
+        public BookingController(IBookingRepository bookingRepository, IConferenceRoomRepository roomRepository, IServiceRepository serviceRepository, IMapper mapper)
         {
             _bookingRepository = bookingRepository;
             _roomRepository = roomRepository;
             _serviceRepository = serviceRepository;
+            _mapper = mapper;
         }
 
         [HttpPost("create")]
@@ -42,13 +45,14 @@ namespace ConferenceRoomBooking.Controllers
                 return NotFound("Conference room not found.");
             }
 
-            var booking = new Booking
-            {
-                RoomId = dtoModel.RoomId,
-                StartTime = dtoModel.StartTime,
-                EndTime = dtoModel.EndTime,
-                TotalCost = 0
-            };
+            var booking = _mapper.Map<Booking>(dtoModel);
+            //var booking = new Booking
+            //{
+            //    RoomId = dtoModel.RoomId,
+            //    StartTime = dtoModel.StartTime,
+            //    EndTime = dtoModel.EndTime,
+            //    TotalCost = 0
+            //};
 
             // TotalCost calculation
             TimeSpan duration = dtoModel.EndTime - dtoModel.StartTime;
