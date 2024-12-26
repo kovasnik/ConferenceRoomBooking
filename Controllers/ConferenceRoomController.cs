@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using ConferenceRoomBooking.DTO.Interfaces;
-using ConferenceRoomBooking.DTO.Repositories;
-using ConferenceRoomBooking.Models;
+﻿using ConferenceRoomBooking.BLL.Interfaces;
+using ConferenceRoomBooking.BLL.Services;
 using ConferenceRoomBooking.ViewModel;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceRoomBooking.Controllers
 {
@@ -13,65 +10,50 @@ namespace ConferenceRoomBooking.Controllers
     public class ConferenceRoomController : Controller
     {
         // Connecting repositories using dependency injection
-        private readonly IConferenceRoomRepository _conferenceRoomRepository;
-        private readonly IRoomServiceRepository _roomServiceRepository;
-        private readonly IMapper _mapper;
-        public ConferenceRoomController(IConferenceRoomRepository roomRepository, IRoomServiceRepository roomServiceRepository, IMapper mapper) 
+        private readonly IConferenceRoomService _conferenceRoomService;
+
+        public ConferenceRoomController(IConferenceRoomService conferenceRoomService) 
         { 
-            _conferenceRoomRepository = roomRepository;
-            _roomServiceRepository = roomServiceRepository;
-            _mapper = mapper;
+            _conferenceRoomService = conferenceRoomService;
         }
 
         [HttpPost("add")]
         public async Task<IActionResult> AddConfereceRoom([FromBody] CreateRoomDto roomWithServices)
         {
-
-            var serviceIds = roomWithServices.ServiceIds;
             // Model checks
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Pass the checked values ​​to the model
-            var room = _mapper.Map<ConferenceRoom>(roomWithServices);
-            //var room = new ConferenceRoom
-            //{
-            //    Name = roomWithServices.Name,
-            //    Description = roomWithServices.Description,
-            //    Capacity = roomWithServices.Capacity,
-            //    CostPerHour = roomWithServices.CostPerHour
-            //};
-
-
-            await _conferenceRoomRepository.AddAsync(room);
-
-            // If not empty add to the RoomServices all connections
-            if (room.RoomServices == null)
+            try
             {
-                room.RoomServices = new List<RoomService>();
+                var roomId = await _conferenceRoomService.AddConfereceRoom(roomWithServices);
+                return Ok(roomId);
             }
-            foreach (var serviceId in serviceIds)
+            catch (Exception)
             {
-                await _roomServiceRepository.AddAsync(new RoomService { ServiceId = serviceId, RoomId = room.Id });
+                return BadRequest("Something went wrong with adding the room. Please try another time.");
             }
-
-            return Ok(room.Id);
         }
 
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteConferenceRoom(int roomId)
         {
             // Search for a conference room by id
-            var room = await _conferenceRoomRepository.GetRoomByIdAsync(roomId);
-            if (room != null)
+            try
             {
-                await _conferenceRoomRepository.DeleteAsync(room);
-                return NoContent(); // 204
-            }
-
+                var isDeleted = await _conferenceRoomService.DeleteConferenceRoom(roomId);
+                if (isDeleted) 
+                {
+                    return NoContent(); // 204
+                }
                 return BadRequest("Id does not exist");
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return BadRequest("Id does not exist");
+            }    
         }
 
         [HttpPut("update")]
@@ -82,59 +64,34 @@ namespace ConferenceRoomBooking.Controllers
             {
                 return BadRequest(ModelState);
             }
-            // Search for a conference room by id
-            var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(dtoModel.Id);
-
-            if (existingRoom == null)
+            try
             {
-                return NotFound("Conference room not found"); //404
+                var isUpdated = await _conferenceRoomService.UpdateConfirenceRoom(dtoModel);
+                if (isUpdated)
+                {
+                    return Ok();
+                }
+                return BadRequest();
             }
-            // Pass the checked values ​​to the model
-            existingRoom = _mapper.Map<ConferenceRoom>(dtoModel);
-            //existingRoom.Name = dtoModel.Name;
-            //existingRoom.CostPerHour = dtoModel.CostPerHour;
-            //existingRoom.Capacity = dtoModel.Capacity;
-            //existingRoom.Description = dtoModel.Description;
-
-            await _conferenceRoomRepository.UpdateAsync(existingRoom);
-            return Ok();
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
         }
 
         [HttpGet("available")]
         public async Task<IActionResult> GetAvailableConfirenceRoom(DateTime startTime, DateTime endTime, int capasity)
         {
-            // booking checks
-            if (startTime.Date != endTime.Date)
+            try
             {
-                return BadRequest("Booking must be made on the same day");
+                var viewModels = await _conferenceRoomService.GetAvailableConfirenceRoom(startTime, endTime, capasity);
+                return Ok(viewModels);
             }
-            TimeSpan startLimit = new TimeSpan(6, 0, 0);  // 06:00
-            TimeSpan endLimit = new TimeSpan(23, 0, 0);   // 23:00
-
-            if (startTime.TimeOfDay < startLimit || endTime.TimeOfDay > endLimit)
+            catch (InvalidOperationException ex)
             {
-                return BadRequest("Booking time must be between 6:00 AM and 11:00 PM");
+                BadRequest(ex.Message);
             }
-
-            // create an IEnumerable object and put all the suitable conference room into it
-            IEnumerable<ConferenceRoom> availableRooms = await _conferenceRoomRepository.GetAvailableRoomAsync(startTime, endTime, capasity);
-
-            // transfer data to the viewmodel to correctly issue service IDs (if we don't transfer it, it will be loop)
-            var viewModels = _mapper.Map < IEnumerable<AvailableRoomsDto>>(availableRooms);
-            //var viewModels = availableRooms.Select(r => new AvailableRoomsDto
-            //{
-            //    Id = r.Id,
-            //    Name = r.Name,
-            //    Capacity = r.Capacity,
-            //    ServiceIds = r.RoomServices.Select(rs => rs.ServiceId).ToList()
-            //});
-
-            if (viewModels is null)
-            {
-                return BadRequest("No available rooms with that time and capasity");
-            }
-
-            return Ok(viewModels);
+            return Ok();
         }
     }
 }
