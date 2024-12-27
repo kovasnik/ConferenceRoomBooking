@@ -30,10 +30,7 @@ namespace ConferenceRoomBooking.BLL.Services
             await _conferenceRoomRepository.AddAsync(room);
 
             // If not empty add to the RoomServices all connections
-            if (room.RoomServices == null)
-            {
-                room.RoomServices = new List<RoomService>();
-            }
+            room.RoomServices ??= new List<RoomService>();
             foreach (var serviceId in serviceIds)
             {
                 await _roomServiceRepository.AddAsync(new RoomService { ServiceId = serviceId, RoomId = room.Id });
@@ -46,13 +43,11 @@ namespace ConferenceRoomBooking.BLL.Services
         {
             // Search for a conference room by id
             var room = await _conferenceRoomRepository.GetRoomByIdAsync(roomId);
-            if (room != null)
-            {
-                await _conferenceRoomRepository.DeleteAsync(room);
-                return true; // 204
-            }
-
-            throw new KeyNotFoundException("Id does not exist");
+            if (room == null)
+                return false;
+            
+            await _conferenceRoomRepository.DeleteAsync(room);
+            return true;
         }
 
         public async Task<bool> UpdateConfirenceRoom(UpdateRoomDto dtoModel)
@@ -61,9 +56,8 @@ namespace ConferenceRoomBooking.BLL.Services
             var existingRoom = await _conferenceRoomRepository.GetRoomByIdAsync(dtoModel.Id);
 
             if (existingRoom == null)
-            {
-                throw new KeyNotFoundException("Conference room not found"); 
-            }
+                return false;
+
             // Pass the checked values ​​to the model
             existingRoom = _mapper.Map<ConferenceRoom>(dtoModel);
 

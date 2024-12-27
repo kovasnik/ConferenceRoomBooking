@@ -41,19 +41,12 @@ namespace ConferenceRoomBooking.Controllers
         public async Task<IActionResult> DeleteConferenceRoom(int roomId)
         {
             // Search for a conference room by id
-            try
+            var isDeleted = await _conferenceRoomService.DeleteConferenceRoom(roomId);
+            if (!isDeleted) 
             {
-                var isDeleted = await _conferenceRoomService.DeleteConferenceRoom(roomId);
-                if (isDeleted) 
-                {
-                    return NoContent(); // 204
-                }
                 return BadRequest("Id does not exist");
             }
-            catch (KeyNotFoundException ex)
-            {
-                return BadRequest("Id does not exist");
-            }    
+            return NoContent(); // 204
         }
 
         [HttpPut("update")]
@@ -64,19 +57,13 @@ namespace ConferenceRoomBooking.Controllers
             {
                 return BadRequest(ModelState);
             }
-            try
+
+            var isUpdated = await _conferenceRoomService.UpdateConfirenceRoom(dtoModel);
+            if (!isUpdated)
             {
-                var isUpdated = await _conferenceRoomService.UpdateConfirenceRoom(dtoModel);
-                if (isUpdated)
-                {
-                    return Ok();
-                }
-                return BadRequest();
+                return BadRequest("Conference room not found");
             }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
+            return Ok();
         }
 
         [HttpGet("available")]

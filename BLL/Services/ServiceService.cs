@@ -35,7 +35,7 @@ namespace ConferenceRoomBooking.BLL.Services
 
             if (service is null)
             {
-                throw new KeyNotFoundException("Servicee does not exist");
+                return false;
             }
 
             await _serviceRepository.DeleteAsync(service);
@@ -48,7 +48,7 @@ namespace ConferenceRoomBooking.BLL.Services
             var service = await _serviceRepository.GetByIdAsync(dtoModel.Id);
             if (service is null)
             {
-                throw new KeyNotFoundException("Servicee does not exist");
+                return false;
             }
             // Pass the checked values ​​to the model
             _mapper.Map(dtoModel, service);
