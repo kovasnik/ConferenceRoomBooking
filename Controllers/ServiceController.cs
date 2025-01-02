@@ -1,7 +1,4 @@
-﻿using AutoMapper;
-using ConferenceRoomBooking.DTO.Interfaces;
-using ConferenceRoomBooking.DTO.Repositories;
-using ConferenceRoomBooking.Models;
+﻿using ConferenceRoomBooking.BLL.Interfaces;
 using ConferenceRoomBooking.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +9,11 @@ namespace ConferenceRoomBooking.Controllers
     public class ServiceController : Controller
     {
         // Connecting repositories using dependency injection
-        private readonly IServiceRepository _serviceRepository;
-        private readonly IMapper _mapper;
+        private readonly IServiceService _serviceService;
         
-        public ServiceController(IServiceRepository serviceRepository, IMapper mapper) 
+        public ServiceController(IServiceService serviceService) 
         {
-            _serviceRepository = serviceRepository;
-            _mapper = mapper;
+            _serviceService = serviceService;
         }
 
         [HttpPost("add")]
@@ -30,32 +25,27 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Pass the checked values ​​to the model
-            var service = _mapper.Map<Service>(dtoModel);
-            //var service = new Service
-            //{
-            //    Name = dtoModel.Name,
-            //    Description = dtoModel.Description,
-            //    Cost = dtoModel.Cost
-            //};
-
-            await _serviceRepository.AddAsync(service);
-            return Ok(service.Id);
+            try
+            {
+                var serviceId = await _serviceService.AddAsync(dtoModel);
+                return Ok(serviceId);
+            }
+            catch (Exception)
+            {
+                return BadRequest("Something went wrong with adding the room. Please try another time.");
+            }
         }
 
         [HttpDelete("delete")]
         public async Task<IActionResult> DeleteAsync(int serviceId)
         {
-            // Search for a service by id
-            var service = await _serviceRepository.GetByIdAsync(serviceId);
-
-            if (service is null)
+            var isDeleted = await _serviceService.DeleteAsync(serviceId);
+            if (!isDeleted)
             {
-                return BadRequest("Servicee does not exist");
-            }
-
-            await _serviceRepository.DeleteAsync(service);
+                return BadRequest("Id does not exist");
+            }   
             return Ok();
+
         }
 
         [HttpPut("update")]
@@ -67,17 +57,11 @@ namespace ConferenceRoomBooking.Controllers
                 return BadRequest("Please enter data");
             }
 
-
-            // Search for a service by id
-            var service = await _serviceRepository.GetByIdAsync(dtoModel.Id);
-
-            // Pass the checked values ​​to the model
-            _mapper.Map(dtoModel, service);
-            //service.Name = dtoModel.Name;
-            //service.Description = dtoModel.Description;
-            //service.Cost = dtoModel.Cost;
-
-            await _serviceRepository.UpdateAsync(service); 
+            var isUpdated = await _serviceService.UpgrateAsync(dtoModel);
+            if (isUpdated)
+            {
+                return NotFound("Service room not found");
+            }
             return Ok();
         }
     }

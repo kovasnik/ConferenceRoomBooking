@@ -1,3 +1,5 @@
+using ConferenceRoomBooking.BLL.Interfaces;
+using ConferenceRoomBooking.BLL.Services;
 using ConferenceRoomBooking.DTO;
 using ConferenceRoomBooking.DTO.Interfaces;
 using ConferenceRoomBooking.DTO.Repositories;
@@ -16,6 +18,10 @@ builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
 builder.Services.AddScoped<IRoomServiceRepository, RoomServiceRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IConferenceRoomRepository, ConferenceRoomRepository>();
+// Dependency injection for services
+builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IConferenceRoomService, ConferenceRoomService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
