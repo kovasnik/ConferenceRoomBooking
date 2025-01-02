@@ -16,6 +16,7 @@ Project has 3 fully working controllers with the main logic of operation
   - search available confirence room by startTime, endTime and capasity
 
 ## Swagger
+![image](https://github.com/user-attachments/assets/e03ed046-e5fb-4801-bb83-b12a25cd809d)
 
 
 **ServicesController:**
